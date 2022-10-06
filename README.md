@@ -1,10 +1,10 @@
 # Nansen Github Actions Public
 
-This is a collection of re-usable github workflows 
+This is a collection of re-usable github workflows
 
 (WIP), wait for Anders to review this before re-using! 
 
-## [build-publish-image-gcr.yml](.github/workflows/build-publish-image-gcr.yml)
+## [build-publish-image-gcr.yml](build-publish-image-gcr.yml)
 
 Pre-requisites:
 - Service Account with required permissions:
@@ -20,3 +20,9 @@ this workflow simply:
 - builds a docker image 
 - pushes to gcr 
 
+## [gke-helm-upgrade.yml](gke-helm-upgrade.yml)
+
+Same pre-requisites as the previous action
+
+this workflow simply:
+- takes in the helm release, chart , values , gke_cluster info to upgrade a helm deployment
