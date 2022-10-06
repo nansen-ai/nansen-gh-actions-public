@@ -1,0 +1,59 @@
+---
+name: Helm Upgrade
+
+on:
+    workflow_call:
+        secrets:
+            WORKLOAD_ID_PROVIDER:
+                required: true
+            SERVICE_ACCOUNT:
+                required: true
+        inputs:
+            GCP_PROJECT:
+                required: true
+                type: string
+            GKE_CLUSTER:
+              required: true
+              type: string
+            GKE_REGION:
+              required: true
+              type: string
+            DEPLOYMENT_NAME:
+              required: true
+              type: string
+            HELM_CHART_DIR:
+              required: true
+              type: string
+            HELM_VALUES:
+              required: true
+              type: string
+
+jobs:
+    helm-upgrade:
+        runs-on: ubuntu-latest
+        strategy:
+            max-parallel: 5
+
+        permissions:
+            contents: read
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: auth
+              id: gcloud_auth
+              uses: google-github-actions/auth@v0.4.0
+              with:
+                  workload_identity_provider: ${{ secrets.WORKLOAD_ID_PROVIDER }}
+                  service_account: ${{ secrets.SERVICE_ACCOUNT }}
+                  project_id: ${{ inputs.GCP_PROJECT }}
+                  token_format: access_token
+            - name: get-gke-credentials
+              id: get-gke-credentials
+              uses: google-github-actions/get-gke-credentials@v0.4.0
+              with:
+                cluster_name: ${{ inputs.GKE_CLUSTER }}
+                location: ${{ inputs.GKE_REGION }}
+            - name: helm-upgrade
+              id: helm-upgrade
+              run: helm upgrade ${{ inputs.DEPLOYMENT_NAME }} ${{ inputs.HELM_CHART_DIR }}/ --values ${{ inputs.HELM_VALUES }}
