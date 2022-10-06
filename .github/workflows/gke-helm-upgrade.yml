@@ -1,5 +1,5 @@
 ---
-name: Helm Upgrade
+name: GKE Helm Upgrade
 
 on:
     workflow_call:
@@ -18,7 +18,7 @@ on:
             GKE_REGION:
               required: true
               type: string
-            DEPLOYMENT_NAME:
+            HELM_RELEASE:
               required: true
               type: string
             HELM_CHART_DIR:
@@ -56,4 +56,4 @@ jobs:
                 location: ${{ inputs.GKE_REGION }}
             - name: helm-upgrade
               id: helm-upgrade
-              run: helm upgrade ${{ inputs.DEPLOYMENT_NAME }} ${{ inputs.HELM_CHART_DIR }}/ --values ${{ inputs.HELM_VALUES }}
+              run: helm upgrade ${{ inputs.HELM_RELEASE }} ${{ inputs.HELM_CHART_DIR }}/ --values ${{ inputs.HELM_VALUES }} --atomic --install
