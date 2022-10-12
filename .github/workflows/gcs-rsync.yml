@@ -1,0 +1,76 @@
+---
+name: GCS Rsync
+
+on:
+    workflow_call:
+        secrets:
+            WORKLOAD_ID_PROVIDER:
+                required: true
+            SERVICE_ACCOUNT:
+                required: true
+        inputs:
+            GCP_PROJECT:
+                required: true
+                type: string
+            SOURCE_DIR:
+                required: true
+                type: string
+            DESTINATION_DIR:
+                required: true
+                type: string
+            EXCLUDE:
+                required: false
+                type: string
+                default: ""
+            DELETE:
+                required: false
+                type: boolean
+                default: false
+            CHECKSUM_VALIDATION:
+                required: false
+                type: boolean
+                default: false
+            RECURSIVE:
+                required: false
+                type: boolean
+                default: true
+
+jobs:
+    gcs-rsync:
+        runs-on: ubuntu-latest
+        strategy:
+            max-parallel: 5
+
+        permissions:
+            contents: read
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: Authenticate to Google Cloud
+              id: gcloud_auth
+              uses: 'google-github-actions/auth@v0'
+              with:
+                  workload_identity_provider: ${{ secrets.WORKLOAD_ID_PROVIDER }}
+                  service_account: ${{ secrets.SERVICE_ACCOUNT }}
+                  project_id: ${{ inputs.GCP_PROJECT }}
+                  token_format: 'access_token'
+            - name: Set up Cloud SDK
+              id: setup_cloud_sdk
+              uses: google-github-actions/setup-gcloud@v0
+            - run: |
+                echo "flags=c" >> $GITHUB_ENV
+              if: ${{ inputs.CHECKSUM_VALIDATION }}
+            - run: |
+                echo "flags=${{env.flags}}d" >> $GITHUB_ENV
+              if: ${{ inputs.DELETE }}
+            - run: |
+                echo "flags=${{env.flags}}r" >> $GITHUB_ENV
+              if: ${{ inputs.RECURSIVE }}
+            - run: |
+                echo "flags=-${{env.flags}}" >> $GITHUB_ENV
+            - run: |
+                echo "${{ env.flags }}"
+            - name: Gsutil Rsync
+              id: gsutil_rsync
+              run: gsutil -m rsync -x '${{ inputs.EXCLUDE }}' ${{ env.flags }} ${{ inputs.SOURCE_DIR }} '${{ inputs.DESTINATION_DIR }}'
