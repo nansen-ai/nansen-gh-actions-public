@@ -49,6 +49,11 @@ jobs:
             - name: Set up Cloud SDK
               id: setup_cloud_sdk
               uses: google-github-actions/setup-gcloud@v0
+              with:
+                # REVIEW: 410.0.0 has a bug that breaks composer commands that
+                # run `kubectl exec`, so pin until fixed.
+                # See https://issuetracker.google.com/issues/259429199.
+                version: '409.0.0'
             - name: Composer Storage Data Import
               id: composer_storage_data_import
               run: |
