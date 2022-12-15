@@ -52,6 +52,7 @@ jobs:
               uses: google-github-actions/setup-gcloud@v1
               with:
                 version: '412.0.0'
+                install_components: gke-gcloud-auth-plugin
             - name: Composer Storage Data Import
               id: composer_storage_data_import
               run: |
@@ -62,6 +63,8 @@ jobs:
                 --project=${{ inputs.GCP_PROJECT }}
             - name: Composer Variables Import
               id: composer_variables_import
+              env:
+                USE_GKE_GCLOUD_AUTH_PLUGIN: True
               run: |
                 gcloud composer environments run \
                 ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
