@@ -40,7 +40,7 @@ jobs:
               id: vars
               shell: bash
               run: |
-                  echo "::set-output name=version_number::$(cat ${{ inputs.VERSION_FILE_PATH }})"
+                  echo "version_number=$(cat ${{ inputs.VERSION_FILE_PATH }})" >> $GITHUB_OUTPUT
             # Set-up Docker Buildx
             - name: Set up Docker Buildx
               id: setup_buildx
