@@ -29,8 +29,6 @@ on:
 jobs:
     composer-vars-update:
         runs-on: ubuntu-latest
-        strategy:
-            max-parallel: 5
 
         permissions:
             contents: read
