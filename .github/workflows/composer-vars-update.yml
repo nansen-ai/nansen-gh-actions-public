@@ -49,7 +49,7 @@ jobs:
               id: setup_cloud_sdk
               uses: google-github-actions/setup-gcloud@v1
               with:
-                version: '412.0.0'
+                version: '413.0.0'
                 install_components: gke-gcloud-auth-plugin
             - name: Composer Storage Data Import
               id: composer_storage_data_import
