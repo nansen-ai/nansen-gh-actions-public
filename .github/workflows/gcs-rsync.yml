@@ -56,6 +56,9 @@ jobs:
             - name: Set up Cloud SDK
               id: setup_cloud_sdk
               uses: google-github-actions/setup-gcloud@v1
+              with:
+                  # REVIEW: https://github.com/GoogleCloudPlatform/gsutil/issues/1663#issuecomment-1402859257
+                  version: '413.0.0'
             - run: |
                 echo "flags=c" >> $GITHUB_ENV
               if: ${{ inputs.CHECKSUM_VALIDATION }}
