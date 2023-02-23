@@ -1,0 +1,78 @@
+---
+name: Composer Packages Update
+
+on:
+  workflow_call:
+    secrets:
+      WORKLOAD_ID_PROVIDER:
+        required: true
+      SERVICE_ACCOUNT:
+        required: true
+    inputs:
+      GCP_PROJECT:
+        required: true
+        type: string
+      COMPOSER_ENVIRONMENT_NAME:
+        required: true
+        type: string
+      COMPOSER_ENVIRONMENT_LOCATION:
+        required: true
+        type: string
+      REQUIREMENTS_FILE_PATHS:
+        description: Space-separated list of paths
+        required: true
+        type: string
+
+jobs:
+  composer-packages-update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_ID_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          project_id: ${{ inputs.GCP_PROJECT }}
+          token_format: "access_token"
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: "418.0.0"
+          install_components: gke-gcloud-auth-plugin
+      - name: Composer Packages Update
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: True
+        run: |
+          LOCAL_REQUIREMENTS_PATH="$(mktemp)"
+
+          cat ${{ inputs.REQUIREMENTS_FILE_PATHS }} \
+          | grep -o '^[^#| ]*' > "$LOCAL_REQUIREMENTS_PATH"
+
+          REMOTE_REQUIREMENTS="$(
+            gcloud composer environments describe \
+              ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
+              --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
+              --project=${{ inputs.GCP_PROJECT }} \
+              --format='value[delimiter="\\n"](config.softwareConfig.pypiPackages)' \
+            | sed -e 's/=//'
+          )"
+
+          if [ "$(echo "$REMOTE_REQUIREMENTS" | sort | md5sum)" \
+            == "$(sort "$LOCAL_REQUIREMENTS_PATH" | md5sum)" ]
+          then
+            echo "No changes detected in local requirements. Skipping update."
+          else
+            echo "Changes detected in local requirements. Updating."
+            gcloud composer environments update \
+              ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
+              --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
+              --project=${{ inputs.GCP_PROJECT }} \
+              --update-pypi-packages-from-file="$LOCAL_REQUIREMENTS_PATH"
+          fi
