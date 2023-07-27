@@ -21,6 +21,9 @@ on:
             DOCKER_PATH_CONTEXT:
                 required: true
                 type: string
+            DOCKER_FILE:
+                required: false
+                type: string
         outputs:
             version_number:
                 value: ${{ jobs.build.outputs.version_number }}
@@ -78,6 +81,7 @@ jobs:
               uses: docker/build-push-action@v3
               with:
                   context: ${{ inputs.DOCKER_PATH_CONTEXT }}
+                  file: ${{ inputs.DOCKER_FILE }}
                   push: true
                   tags: ${{ steps.docker_meta.outputs.tags }}
                   cache-from: type=gha
