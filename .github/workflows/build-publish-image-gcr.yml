@@ -42,8 +42,10 @@ jobs:
             - name: Get Version Number
               id: vars
               shell: bash
+              env:
+                  VERSION_FILE_PATH: ${{ inputs.VERSION_FILE_PATH }}
               run: |
-                  echo "version_number=$(cat ${{ inputs.VERSION_FILE_PATH }})" >> $GITHUB_OUTPUT
+                  echo "version_number=$(cat $VERSION_FILE_PATH)" >> $GITHUB_OUTPUT
             # Set-up Docker Buildx
             - name: Set up Docker Buildx
               id: setup_buildx
