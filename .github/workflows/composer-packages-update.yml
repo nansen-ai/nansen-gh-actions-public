@@ -49,17 +49,21 @@ jobs:
       - name: Composer Packages Update
         env:
           USE_GKE_GCLOUD_AUTH_PLUGIN: True
+          REQUIREMENTS_FILE_PATHS: ${{ inputs.REQUIREMENTS_FILE_PATHS }}
+          COMPOSER_ENVIRONMENT_NAME: ${{ inputs.COMPOSER_ENVIRONMENT_NAME }}
+          COMPOSER_ENVIRONMENT_LOCATION: ${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }}
+          GCP_PROJECT: ${{ inputs.GCP_PROJECT }}
         run: |
           LOCAL_REQUIREMENTS_PATH="$(mktemp)"
 
-          cat ${{ inputs.REQUIREMENTS_FILE_PATHS }} \
+          cat $REQUIREMENTS_FILE_PATHS \
           | grep -o '^[^#| ]*' > "$LOCAL_REQUIREMENTS_PATH"
 
           REMOTE_REQUIREMENTS="$(
             gcloud composer environments describe \
-              ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
-              --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
-              --project=${{ inputs.GCP_PROJECT }} \
+              $COMPOSER_ENVIRONMENT_NAME \
+              --location=$COMPOSER_ENVIRONMENT_LOCATION \
+              --project=$GCP_PROJECT \
               --format='value[delimiter="\\n"](config.softwareConfig.pypiPackages)' \
             | sed -e 's/=//'
           )"
@@ -71,8 +75,8 @@ jobs:
           else
             echo "Changes detected in local requirements. Updating."
             gcloud composer environments update \
-              ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
-              --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
-              --project=${{ inputs.GCP_PROJECT }} \
+              $COMPOSER_ENVIRONMENT_NAME \
+              --location=$COMPOSER_ENVIRONMENT_LOCATION \
+              --project=$GCP_PROJECT \
               --update-pypi-packages-from-file="$LOCAL_REQUIREMENTS_PATH"
           fi
