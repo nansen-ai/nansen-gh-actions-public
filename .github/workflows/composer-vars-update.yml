@@ -53,20 +53,29 @@ jobs:
                 install_components: gke-gcloud-auth-plugin
             - name: Composer Storage Data Import
               id: composer_storage_data_import
+              env:
+                COMPOSER_ENVIRONMENT_NAME: ${{ inputs.COMPOSER_ENVIRONMENT_NAME }}
+                COMPOSER_ENVIRONMENT_LOCATION: ${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }}
+                VARIABLES_FILE_PATH: ${{ inputs.VARIABLES_FILE_PATH }}
+                GCP_PROJECT: ${{ inputs.GCP_PROJECT }}
               run: |
                 gcloud composer environments storage data import \
-                --environment=${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
-                --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
-                --source=${{ inputs.VARIABLES_FILE_PATH }} \
-                --project=${{ inputs.GCP_PROJECT }}
+                --environment=$COMPOSER_ENVIRONMENT_NAME \
+                --location=$COMPOSER_ENVIRONMENT_LOCATION \
+                --source=$VARIABLES_FILE_PATH \
+                --project=$GCP_PROJECT
             - name: Composer Variables Import
               id: composer_variables_import
               env:
                 USE_GKE_GCLOUD_AUTH_PLUGIN: True
+                COMPOSER_ENVIRONMENT_NAME: ${{ inputs.COMPOSER_ENVIRONMENT_NAME }}
+                COMPOSER_ENVIRONMENT_LOCATION: ${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }}
+                GCP_PROJECT: ${{ inputs.GCP_PROJECT }}
+                VARIABLES_FILE_NAME: ${{ inputs.VARIABLES_FILE_NAME }}
               run: |
                 gcloud composer environments run \
-                ${{ inputs.COMPOSER_ENVIRONMENT_NAME }} \
-                --location=${{ inputs.COMPOSER_ENVIRONMENT_LOCATION }} \
-                --project=${{ inputs.GCP_PROJECT }} \
+                $COMPOSER_ENVIRONMENT_NAME \
+                --location=$COMPOSER_ENVIRONMENT_LOCATION \
+                --project=$GCP_PROJECT \
                 variables \
-                import -- /home/airflow/gcs/data/${{ inputs.VARIABLES_FILE_NAME }}
+                import -- /home/airflow/gcs/data/$VARIABLES_FILE_NAME

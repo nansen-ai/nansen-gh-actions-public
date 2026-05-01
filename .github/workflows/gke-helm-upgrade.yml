@@ -54,4 +54,8 @@ jobs:
                 location: ${{ inputs.GKE_REGION }}
             - name: helm-upgrade
               id: helm-upgrade
-              run: helm upgrade ${{ inputs.HELM_RELEASE }} ${{ inputs.HELM_CHART_DIR }}/ --values ${{ inputs.HELM_VALUES }} --atomic --install
+              env:
+                HELM_RELEASE: ${{ inputs.HELM_RELEASE }}
+                HELM_CHART_DIR: ${{ inputs.HELM_CHART_DIR }}
+                HELM_VALUES: ${{ inputs.HELM_VALUES }}
+              run: helm upgrade $HELM_RELEASE $HELM_CHART_DIR/ --values $HELM_VALUES --atomic --install

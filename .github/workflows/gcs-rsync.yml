@@ -74,4 +74,8 @@ jobs:
                 echo "${{ env.flags }}"
             - name: Gsutil Rsync
               id: gsutil_rsync
-              run: gsutil -m rsync -x '${{ inputs.EXCLUDE }}' ${{ env.flags }} ${{ inputs.SOURCE_DIR }} '${{ inputs.DESTINATION_DIR }}'
+              env:
+                  EXCLUDE: ${{ inputs.EXCLUDE }}
+                  SOURCE_DIR: ${{ inputs.SOURCE_DIR }}
+                  DESTINATION_DIR: ${{ inputs.DESTINATION_DIR }}
+              run: gsutil -m rsync -x '$EXCLUDE' ${{ env.flags }} $SOURCE_DIR '$DESTINATION_DIR'
